@@ -1,0 +1,73 @@
+OFFICIAL TODO LIST:
+1. Get Game, StdInPlayer, and world.py working so that the game is playable again with new Being-Encounter stuff
+2. Make new interface with http://www.effbot.org/zone/console-handbook.htm ???
+
+* Combat groups
+Support in the Combat class but not really tested
+
+* Calling reinforcements
+A follow up idea to "Combat groups".  It means that in certain situations you can call for help and other combatants will join in your combat group.
+
+* Multiplayer
+
+* Salvage
+Dead guys leave loot
+
+* All programmable players
+This means that all NPCs are implementing the same Player interface as human players are.
+
+* Make hit points stop resetting after each combat and only reset at a node
+
+* http://www.effbot.org/zone/console-handbook.htm
+
+* Make Merchant(Player) class that takes GoodProfiles to the constructor
+
+* Non-combat encounters
+The two that come to mind are roaming merchants and police.  This would entail:
+* A new state similar to EdgeCombatState
+* A new method(s) on Player similar to chooseCombatAction and combatEvents
+* A new series of events similar to CombatEvent and derived classes
+There has to be some idea that you can transition between these states.  For example, you can start off interacting with the police in EdgeSearchState but if you refuse you transition to EdgeCombatState.
+
+* All purpose inventory object
+Members = inventory (dictionary of goodName -> quantity), vessel (VesselProfile object), fuel, money
+
+* Being object
+  Name
+  Inventory
+  Player
+  location
+  state
+  money
+  fuel
+  vessel
+
+* Encounter object
+  Takes 2 Being objects
+  New method on Player to vote for initial state
+
+SearchAndSeizureState (on init inventoryRequest is sent to the other guy)
+  inventoryRequest
+    SUBMIT, REFUSE (->CombatState)
+  searchAndSeizureEvents
+    OTHER_GUYS_INVENTORY, YOU_ARE_OK, ILLEGAL (->CombatState)
+    ???
+  SearchAndSeizureAction
+    SUBMIT, REFUSE (->CombatState), TAKE, ALLOW
+    ???
+
+TradeState (on init inventories are swapped)
+  chooseTradeAction(all inventories)
+    BUY_OFFER, SELL_OFFER, FLEE, FIGHT (->CombatState), SEARCH (->SearchAndSeizureState)
+
+CombatState
+  chooseCombatAction
+    FIGHT, FLEE, TRIBUTE
+  tributeAttempt
+    NO, OK (->TradeState)
+
+      |   S&S   | Trade  | Combat
+-------------------------------
+S&S   | Combat  |   S&S  | Combat
+Trade |   S&S   | Trade  | Combat
+Combat| Comabat | Combat | Combat
