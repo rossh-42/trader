@@ -1,7 +1,7 @@
-import encounter
-from players.randomPlayer import RandomPlayer
 import random
-import search
+from trader import encounter
+from trader.players.randomPlayer import RandomPlayer
+from trader import search
 
 
 class BriberRefuser(RandomPlayer):

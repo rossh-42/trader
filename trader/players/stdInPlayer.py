@@ -1,9 +1,9 @@
-import combat
-import encounter
-import game
 import string
 import sys
-import trade
+from trader import combat
+from trader import encounter
+from trader import game
+from trader import trade
 
 
 class AbortException(Exception):

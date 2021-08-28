@@ -1,15 +1,14 @@
-import being
 from collections import Counter
-import combat
-import encounter
-import game
-from players.stdInPlayer import StdInPlayer
 import random
-import search
-import trade
+from trader import combat
+from trader import encounter
+from trader.game import Inventory, Player
+from trader.players.stdInPlayer import StdInPlayer
+from trader import search
+from trader import trade
 
 
-class RandomPlayer(game.Player):
+class RandomPlayer(Player):
     """A player that makes all game decisions more or less randomly."""
 
     def __init__(self, verbose=True):
@@ -159,7 +158,7 @@ class RandomPlayer(game.Player):
         goodToTake = random.choice(list(themInventory.goods.keys()))
         amountToTake = random.randint(1, 100)
         goods_dict = {goodToTake: amountToTake}
-        inventoryToTake = being.Inventory(goods=Counter(goods_dict))
+        inventoryToTake = Inventory(goods=Counter(goods_dict))
         return inventoryToTake
 
     def searchEvents(self, game, events):

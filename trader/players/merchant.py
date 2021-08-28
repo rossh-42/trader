@@ -1,9 +1,9 @@
-import combat
-import encounter
-import game
-import random
-import search
-import trade
+from trader import combat
+from trader import encounter
+from trader import game
+from trader import random
+from trader import search
+from trader import trade
 
 
 class MerchantPlayer(game.Player):

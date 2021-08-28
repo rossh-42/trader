@@ -1,7 +1,7 @@
-from combat import Combat, CombatEventCode, CombatAction
-from profiles import Vessel
-from profiles import VesselUpgrade
 import pytest
+from trader.combat import Combat, CombatEventCode, CombatAction
+from trader.profiles import Vessel
+from trader.profiles import VesselUpgrade
 
 
 @pytest.fixture

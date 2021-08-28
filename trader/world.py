@@ -1,8 +1,8 @@
 import networkx as nx
-from profiles import Item
-from profiles import VesselUpgrade
-from profiles import Vessel
-from profiles import EventProfile
+from trader.profiles import Item
+from trader.profiles import VesselUpgrade
+from trader.profiles import Vessel
+from trader.profiles import EventProfile
 
 
 graph = nx.Graph()

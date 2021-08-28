@@ -1,5 +1,5 @@
-from game import Game
-from players.randomPlayer import RandomPlayer
+from trader.game import Game
+from trader.players.randomPlayer import RandomPlayer
 import unittest
 
 

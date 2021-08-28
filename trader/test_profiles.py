@@ -1,7 +1,7 @@
-from profiles import EventProfile
-from profiles import Item
-from profiles import Vessel
-from profiles import VesselUpgrade
+from trader.profiles import EventProfile
+from trader.profiles import Item
+from trader.profiles import Vessel
+from trader.profiles import VesselUpgrade
 
 
 def test_price_profile():

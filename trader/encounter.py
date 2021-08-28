@@ -1,7 +1,7 @@
-from combat import Combat, CombatEventCode
 from enum import Enum
-from trade import Trade
-from search import Search, SearchAction, SearchEventCode
+from trader.combat import Combat, CombatEventCode
+from trader.search import Search, SearchAction, SearchEventCode
+from trader.trade import Trade
 
 
 class EncounterState:

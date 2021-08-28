@@ -1,11 +1,11 @@
-import combat
-from encounter import Encounter, EncounterStateCode
-from game import Game
-from players.boarder import Boarder
-from players.briberrefuser import BriberRefuser
-from players.randomPlayer import RandomPlayer
-import search
-import trade
+from trader import combat
+from trader.encounter import Encounter, EncounterStateCode
+from trader.game import Game
+from trader.players.boarder import Boarder
+from trader.players.briberrefuser import BriberRefuser
+from trader.players.randomPlayer import RandomPlayer
+from trader import search
+from trader import trade
 
 
 def test_trade_encounter():
