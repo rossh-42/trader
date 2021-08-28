@@ -35,7 +35,7 @@ class Game:
         self.day = 0  # And on the first day Ross initialized to zero...
         worldGlobals = {}
         if not customWorld:
-            customWorld = 'world.py'
+            customWorld = 'trader/world.py'
         # execfile(customWorld, worldGlobals)
         worldGlobals = readCustomWorld(customWorld)
         self.graph = worldGlobals['graph']
