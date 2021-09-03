@@ -1,7 +1,7 @@
 import argparse
 from collections import Counter
 import random
-from trader import combat
+from trader.combat import DeathReason
 from trader.encounter import Encounter
 from trader.profiles import Vessel
 from trader.profiles import VesselUpgrade
@@ -608,7 +608,7 @@ class Being:
         self.destination = ''
         self.lastDestination = ''
         self.currentLocation = initialLocation
-        self._state = NodeBeingState(self, game)
+        self._state: BeingState = NodeBeingState(self, game)
         self._dead = False
 
     def __str__(self):
@@ -678,7 +678,7 @@ class NodeBeingState(BeingState):
 
         # Does the player have enough fuel to get anywhere?
         if not self._playerHasEnoughFuelToGetAnywhere(game):
-            self._being.player.death(game, combat.OUT_OF_FUEL)
+            self._being.player.death(game, DeathReason.OUT_OF_FUEL)
             return False
 
         # Now let's go to the next destination
@@ -709,7 +709,7 @@ class TravelBeingState(BeingState):
             self._being.arrived(game)
         else:
             if self._being.inventory.goods['fuel'] == 0:
-                self._being.player.death(game, combat.OUT_OF_FUEL)
+                self._being.player.death(game, DeathReason.OUT_OF_FUEL)
                 return False
             self._being.player.safeTravelUpdate(game, self._distance)
         return True
@@ -734,9 +734,9 @@ if __name__ == '__main__':
                         help='use a custom world')
     args = parser.parse_args()
 
-    from players.stdInPlayer import StdInPlayer
-    from players.randomPlayer import RandomPlayer
-    from players.merchant import MerchantPlayer
+    from trader.players.stdInPlayer import StdInPlayer
+    from trader.players.randomPlayer import RandomPlayer
+    from trader.players.merchant import MerchantPlayer
     g = Game([StdInPlayer(),
               RandomPlayer(verbose=False),
               RandomPlayer(verbose=False),

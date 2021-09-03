@@ -1,6 +1,6 @@
 import random
 from trader.game import Game, Being
-from trader import encounter
+from trader.encounter import EncounterStateCode
 from trader import search
 from trader.players.randomPlayer import RandomPlayer
 
@@ -17,7 +17,7 @@ class Boarder(RandomPlayer):
         return self._beingName
 
     def voteInitState(self, game: Game, being: Being):
-        return encounter.SEARCH
+        return EncounterStateCode.SEARCH
 
     def chooseSearchAction(self, game: Game, meBeing: Being, themBeing: Being):
         return random.choice((search.SearchAction.PASS, search.SearchAction.BOARD))

@@ -2,9 +2,9 @@ import random
 from trader.combat import Combat, CombatEvent, CombatAction, DeathReason
 from trader.encounter import EncounterStateCode
 from trader.game import Game, Being, Inventory, Player
-from trader import search
+from trader.search import SearchAction
 from trader.trade import TradeAction
-from typing import List
+from typing import Dict, List
 
 
 class MerchantPlayer(Player):
@@ -12,7 +12,7 @@ class MerchantPlayer(Player):
 
     def __init__(self, verbose: bool = True):
         self._verbose = verbose
-        self._prices = {}
+        self._prices: Dict[str, int] = {}
 
     def initGame(self, playerNumber: int):
         self._beingName = 'MerchantPlayer{0}'.format(playerNumber)
@@ -68,13 +68,13 @@ class MerchantPlayer(Player):
         return True
 
     def chooseSearchAction(self, game: Game, meBeing: Being, themBeing: Being):
-        return search.PASS
+        return SearchAction.PASS
 
     def evaluateBoardRequest(self, game: Game, meBeing: Being, themBeing: Being):
-        return search.SUBMIT
+        return SearchAction.SUBMIT
 
     def evaluateBribeSolicitation(self, game: Game, meBeing: Being, themBeing: Being):
-        return (search.PASS, 0)
+        return (SearchAction.PASS, 0)
 
     def seize(self, game: Game, themInventory: Inventory):
         assert(False)

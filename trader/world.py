@@ -73,7 +73,6 @@ graph.add_node('earth', events=[famineEvent, civilWarEvent])
 graph.add_node('mars', events=[famineEvent, civilWarEvent])
 graph.add_node('venus', events=[famineEvent, civilWarEvent])
 
-edgeAttrDict = {}
 graph.add_edge('earth', 'mars', weight=10)
 graph.add_edge('mars', 'venus', weight=22)
 graph.add_edge('earth', 'venus', weight=10)
