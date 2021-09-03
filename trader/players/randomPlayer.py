@@ -5,7 +5,7 @@ from trader import encounter
 from trader.game import Inventory, Player
 from trader.players.stdInPlayer import StdInPlayer
 from trader import search
-from trader import trade
+from trader.trade import TradeAction
 
 
 class RandomPlayer(Player):
@@ -80,15 +80,16 @@ class RandomPlayer(Player):
         pass
 
     def chooseTradeAction(self, game, meBeing, themBeing):
-        tradeAction = random.choice((trade.BUY, trade.SELL, trade.BUY, trade.SELL, trade.DONE))
-        if tradeAction == trade.BUY:
+        tradeAction = random.choice((TradeAction.BUY, TradeAction.SELL, TradeAction.BUY,
+                                     TradeAction.SELL, TradeAction.DONE))
+        if tradeAction == TradeAction.BUY:
             numItems = len(themBeing.inventory.goods)
             if numItems == 0:
-                return (trade.DONE, None, None, None)
+                return (TradeAction.DONE, None, None, None)
             goodName = random.choice(list(themBeing.inventory.goods.keys()))
             playerBuyPrice = self._prices[goodName]
             if playerBuyPrice > meBeing.inventory.money:
-                return (trade.DONE, None, None, None)
+                return (TradeAction.DONE, None, None, None)
             attempts = 1000
             while attempts:
                 quantity = random.randint(1, 100)
@@ -96,12 +97,12 @@ class RandomPlayer(Player):
                     break
                 attempts -= 1
             if attempts == 0:
-                return (trade.DONE, None, None, None)
+                return (TradeAction.DONE, None, None, None)
             return (tradeAction, quantity, goodName, playerBuyPrice)
-        elif tradeAction == trade.SELL:
+        elif tradeAction == TradeAction.SELL:
             numItems = len(meBeing.inventory.goods)
             if numItems == 0:
-                return (trade.DONE, None, None, None)
+                return (TradeAction.DONE, None, None, None)
             goodName = random.choice(list(meBeing.inventory.goods.keys()))
             playerSellPrice = self._prices[goodName]
             attempts = 1000
@@ -111,22 +112,22 @@ class RandomPlayer(Player):
                     break
                 attempts -= 1
             if attempts == 0:
-                return (trade.DONE, None, None, None)
+                return (TradeAction.DONE, None, None, None)
             return (tradeAction, quantity, goodName, playerSellPrice)
         else:
             if self._verbose:
                 print('LEAVING TRADE SESSION')
-            assert(tradeAction == trade.DONE)
+            assert(tradeAction == TradeAction.DONE)
         return (tradeAction, None, None, None)
 
     def evaluateTradeRequest(self, game, meBeing, themBeing, tradeAction, quantity, goodName, price):
-        if tradeAction == trade.SELL:
+        if tradeAction == TradeAction.SELL:
             # I don't have enough money to buy this
             if quantity * price > meBeing.inventory.money:
                 if self._verbose:
                     print('REJECTED: Not enough money to buy')
                 return False
-        elif tradeAction == trade.BUY:
+        elif tradeAction == TradeAction.BUY:
             # I don't have enough of this good to make a sale
             if goodName not in meBeing.inventory.goods.keys():
                 if self._verbose:

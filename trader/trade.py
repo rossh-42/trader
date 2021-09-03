@@ -1,14 +1,18 @@
-# TradeAction
-BUY = 1
-SELL = 2
-DONE = 3
-PASS = 4
+from enum import Enum, IntEnum
 
-# TradeEvent
-TRANSACTION = 1
-REFUSAL = 2
-LEAVE = 3
-JOIN = 4
+
+class TradeAction(Enum):
+    BUY = 1
+    SELL = 2
+    DONE = 3
+    PASS = 4
+
+
+class TradeEventCode(IntEnum):
+    TRANSACTION = 1
+    REFUSAL = 2
+    LEAVE = 3
+    JOIN = 4
 
 
 class Trade:
@@ -85,7 +89,7 @@ class Trade:
 
         for initiator in commands:
             (tradeAction, quantity, goodName, price) = commands[initiator]
-            if tradeAction == BUY:
+            if tradeAction == TradeAction.BUY:
                 buyerBeing = self.beings[initiator]
                 sellerBeing = self._getOtherBeing(initiator)
 
@@ -102,7 +106,7 @@ class Trade:
                 accepted = sellerBeing.player.evaluateTradeRequest(self._game,
                                                                    sellerBeing,
                                                                    buyerBeing,
-                                                                   SELL,
+                                                                   TradeAction.SELL,
                                                                    quantity,
                                                                    goodName,
                                                                    price)
@@ -126,7 +130,7 @@ class Trade:
                                                         price,
                                                         goodName,
                                                         quantity), tradeEvents)
-            elif tradeAction == SELL:
+            elif tradeAction == TradeAction.SELL:
                 sellerBeing = self.beings[initiator]
                 buyerBeing = self._getOtherBeing(initiator)
 
@@ -143,7 +147,7 @@ class Trade:
                 accepted = buyerBeing.player.evaluateTradeRequest(self._game,
                                                                   buyerBeing,
                                                                   sellerBeing,
-                                                                  BUY,
+                                                                  TradeAction.BUY,
                                                                   quantity,
                                                                   goodName,
                                                                   price)
@@ -167,9 +171,9 @@ class Trade:
                                                         price,
                                                         goodName,
                                                         quantity), tradeEvents)
-            elif tradeAction == PASS:
+            elif tradeAction == TradeAction.PASS:
                 pass
-            elif tradeAction == DONE:
+            elif tradeAction == TradeAction.DONE:
                 self._recordEvent(LeaveTradeEvent(initiator), tradeEvents)
                 self._keepGoing = False
                 break
@@ -181,7 +185,7 @@ class Trade:
 
 class TradeEvent:
     """Base class for all events possible in trade."""
-    def __init__(self, eventCode):
+    def __init__(self, eventCode: TradeEventCode):
         """
         eventCode - TradeEvent that identifies the most derived class.
         """
@@ -198,7 +202,7 @@ class TransactionTradeEvent(TradeEvent):
         good - The name of the good.
         quantity - The quantity of the good.
         """
-        TradeEvent.__init__(self, TRANSACTION)
+        TradeEvent.__init__(self, TradeEventCode.TRANSACTION)
         self.buyer = str(buyer)
         self.seller = str(seller)
         self.price = int(price)
@@ -223,7 +227,7 @@ class RefusalTradeEvent(TradeEvent):
         good - The name of the good.
         quantity - The quantity of the good.
         """
-        TradeEvent.__init__(self, TRANSACTION)
+        TradeEvent.__init__(self, TradeEventCode.TRANSACTION)
         self.buyer = str(buyer)
         self.seller = str(seller)
         self.price = int(price)
@@ -242,7 +246,7 @@ class LeaveTradeEvent(TradeEvent):
     """A being is leaving the trading session."""
     def __init__(self, beingName):
         """beingName - Name of the being leaving the trading session."""
-        TradeEvent.__init__(self, LEAVE)
+        TradeEvent.__init__(self, TradeEventCode.LEAVE)
         self.beingName = str(beingName)
 
     def __str__(self):
@@ -253,7 +257,7 @@ class JoinTradeEvent(TradeEvent):
     """A being is joining the trading session."""
     def __init__(self, beingName):
         """beingName - Name of the being joining the trading session."""
-        TradeEvent.__init__(self, JOIN)
+        TradeEvent.__init__(self, TradeEventCode.JOIN)
         self.beingName = str(beingName)
 
     def __str__(self):

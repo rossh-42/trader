@@ -5,7 +5,7 @@ from trader.players.boarder import Boarder
 from trader.players.briberrefuser import BriberRefuser
 from trader.players.randomPlayer import RandomPlayer
 from trader import search
-from trader import trade
+from trader.trade import TradeEventCode
 
 
 def test_trade_encounter():
@@ -23,12 +23,12 @@ def test_trade_encounter():
             if not keepGoing:
                 break
 
-        assert e.eventLog()[0].eventCode == trade.JOIN
-        assert e.eventLog()[1].eventCode == trade.JOIN
+        assert e.eventLog()[0].eventCode == TradeEventCode.JOIN
+        assert e.eventLog()[1].eventCode == TradeEventCode.JOIN
         for eventIndex in range(2, len(e.eventLog())-1):
-            assert e.eventLog()[eventIndex].eventCode in (trade.TRANSACTION, trade.REFUSAL)
+            assert e.eventLog()[eventIndex].eventCode in (TradeEventCode.TRANSACTION, TradeEventCode.REFUSAL)
         lastEvent = e.eventLog()[-1:][0]
-        assert lastEvent.eventCode == trade.LEAVE
+        assert lastEvent.eventCode == TradeEventCode.LEAVE
 
 
 def test_combat_encounter():
