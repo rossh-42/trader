@@ -1,10 +1,10 @@
 from collections import Counter
 import random
 from trader.combat import Combat, CombatEvent, CombatAction, DeathReason
-from trader import encounter
+from trader.encounter import EncounterStateCode
 from trader.game import Inventory, Player, Game, Being
 from trader.players.stdInPlayer import StdInPlayer
-from trader.search import SearchAction
+from trader.search import SearchAction, SearchEvent
 from trader.trade import TradeAction
 from typing import List, Tuple, Dict, Optional
 
@@ -17,7 +17,7 @@ class RandomPlayer(Player):
         self._verbose = verbose
         self._prices: Dict[str, int] = {}
 
-    def initGame(self, playerNumber: int):
+    def initGame(self, playerNumber: int) -> str:
         self._beingName = 'RandomPlayer{0}'.format(playerNumber)
         self._stdInPlayer._beingName = self._beingName
         return self._beingName
@@ -32,7 +32,7 @@ class RandomPlayer(Player):
         else:
             assert(False)
 
-    def chooseDestination(self, game: Game):
+    def chooseDestination(self, game: Game) -> Optional[str]:
         being = game.getBeingByName(self._beingName)
         attempts = len(game.graph.nodes()) * 10
         while attempts:
@@ -51,11 +51,11 @@ class RandomPlayer(Player):
         if self._verbose:
             self._stdInPlayer.safeTravelUpdate(game, distanceLeft)
 
-    def voteInitState(self, game: Game, being: Being):
-        return random.choice((encounter.EncounterStateCode.COMBAT,
-                              encounter.EncounterStateCode.TRADE))  # Need to add encounter.SEARCH here?
+    def voteInitState(self, game: Game, being: Being) -> EncounterStateCode:
+        return random.choice((EncounterStateCode.COMBAT,
+                              EncounterStateCode.TRADE))  # Need to add encounter.SEARCH here?
 
-    def chooseCombatAction(self, game: Game, being: Being, cmbt: Combat):
+    def chooseCombatAction(self, game: Game, being: Being, cmbt: Combat) -> CombatAction:
         return random.choice((CombatAction.FIGHT, CombatAction.FLEE))
 
     def combatEvents(self, game: Game, events: List[CombatEvent]):
@@ -69,7 +69,7 @@ class RandomPlayer(Player):
     def nodeEvents(self, game: Game, events: Tuple[str]):
         pass
 
-    def advertiseTrade(self, game: Game, meBeing: Being):
+    def advertiseTrade(self, game: Game, meBeing: Being) -> Dict[str, int]:
         self._prices = {}
         for goodName in meBeing.inventory.goods:
             self._prices[goodName] = random.randint(1, 100)
@@ -80,7 +80,7 @@ class RandomPlayer(Player):
     def readTradeAdvertisement(self, game: Game, prices: Dict[str, int]):
         pass
 
-    def chooseTradeAction(self, game: Game, meBeing: 'Being', themBeing: 'Being') -> Tuple[TradeAction, Optional[int], Optional[str], Optional[int]]:  # noqa: E501
+    def chooseTradeAction(self, game: Game, meBeing: Being, themBeing: Being) -> Tuple[TradeAction, Optional[int], Optional[str], Optional[int]]:  # noqa: E501
         tradeAction = random.choice((TradeAction.BUY, TradeAction.SELL, TradeAction.BUY,
                                      TradeAction.SELL, TradeAction.DONE))
         if tradeAction == TradeAction.BUY:
@@ -122,7 +122,7 @@ class RandomPlayer(Player):
         return (tradeAction, None, None, None)
 
     def evaluateTradeRequest(self, game: Game, meBeing: Being, themBeing: Being, tradeAction: TradeAction,
-                             quantity: int, goodName: str, price: int):
+                             quantity: int, goodName: str, price: int) -> bool:
         if tradeAction == TradeAction.SELL:
             # I don't have enough money to buy this
             if quantity * price > meBeing.inventory.money:
@@ -144,27 +144,27 @@ class RandomPlayer(Player):
             print('ACCEPTED')
         return True
 
-    def chooseSearchAction(self, game: Game, meBeing: Being, themBeing: Being):
+    def chooseSearchAction(self, game: Game, meBeing: Being, themBeing: Being) -> SearchAction:
         return random.choice((SearchAction.BOARD, SearchAction.SOLICIT_BRIBE, SearchAction.PASS, SearchAction.FIGHT))
 
-    def evaluateBoardRequest(self, game: Game, meBeing: Being, themBeing: Being):
+    def evaluateBoardRequest(self, game: Game, meBeing: Being, themBeing: Being) -> SearchAction:
         return random.choice((SearchAction.PASS, SearchAction.FIGHT, SearchAction.SUBMIT))
 
-    def evaluateBribeSolicitation(self, game: Game, meBeing: Being, themBeing: Being):
+    def evaluateBribeSolicitation(self, game: Game, meBeing: Being, themBeing: Being) -> Tuple[SearchAction, int]:
         answer = random.choice((SearchAction.PASS, SearchAction.FIGHT, SearchAction.SUBMIT))
         bribeAmount = 0
         if answer == SearchAction.SUBMIT:
             bribeAmount = random.randint(1, 100)
         return (answer, bribeAmount)
 
-    def seize(self, game: Game, themInventory: Inventory):
+    def seize(self, game: Game, themInventory: Inventory) -> Inventory:
         goodToTake = random.choice(list(themInventory.goods.keys()))
         amountToTake = random.randint(1, 100)
         goods_dict = {goodToTake: amountToTake}
         inventoryToTake = Inventory(goods=Counter(goods_dict))
         return inventoryToTake
 
-    def searchEvents(self, game: Game, events):
+    def searchEvents(self, game: Game, events: List[SearchEvent]):
         pass
 
 

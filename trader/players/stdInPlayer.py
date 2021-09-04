@@ -362,8 +362,8 @@ class StdInPlayer(Player):
 
     def evaluateTradeRequest(self, game, meBeing, themBeing, tradeAction, quantity, goodName, price):
         print('Trade offer from {0}'.format(themBeing.name))
-        assert(tradeAction in (trade.BUY, trade.SELL))
-        tradeActionString = 'buy' if tradeAction == trade.BUY else 'sell'
+        assert(tradeAction in (TradeAction.BUY, TradeAction.SELL))
+        tradeActionString = 'buy' if tradeAction == TradeAction.BUY else 'sell'
         print('Would you like to {0} {1} {2} for {3}?'.format(tradeActionString, quantity, goodName, price))
         while True:
             self._playerState = 'chooseYesNo'
