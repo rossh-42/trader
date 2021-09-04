@@ -2,15 +2,16 @@ import string
 import sys
 from trader import combat
 from trader import encounter
-from trader import game
-from trader import trade
+from trader.game import Game, Being, Player
+from trader.trade import TradeAction
+from typing import Tuple, Optional
 
 
 class AbortException(Exception):
     pass
 
 
-class StdInPlayer(game.Player):
+class StdInPlayer(Player):
     def __init__(self):
         self._playerState = ''
         self._buyPrices = {}
@@ -277,17 +278,17 @@ class StdInPlayer(game.Player):
             print('{0}: {1}'.format(goodName, prices[goodName]))
         self._buyPrices = prices
 
-    def chooseTradeAction(self, game, meBeing, themBeing):
+    def chooseTradeAction(self, game: Game, meBeing: Being, themBeing: Being) -> Tuple[TradeAction, Optional[int], Optional[str], Optional[int]]:  # noqa: E501
         meBeing = game.getBeingByName(self._beingName)
         self._playerState = 'chooseTradeAction'
         self._printNodeGoodsList(themBeing.inventory.goods)
-        retval = (None, None, None, None)
+        retval: Tuple[TradeAction, Optional[int], Optional[str], Optional[int]] = (TradeAction.DONE, None, None, None)
         while True:
             try:
                 print('Choose a trade command (buy, sell, done)')
                 action = self._getInput(game, '$>', themBeing.inventory.goods)
                 if action == 'done':
-                    retval = (trade.DONE, 0, '', 0)
+                    retval = (TradeAction.DONE, 0, '', 0)
                     break
                 elif action == 'merchant':
                     self._printNodeGoodsList(themBeing.inventory.goods)
@@ -321,7 +322,7 @@ class StdInPlayer(game.Player):
 
                     # This all checks out, return this.
                     print('BUY {0} {1} for {2}'.format(quantity, goodName, playerBuyPrice*quantity))
-                    retval = (trade.BUY, quantity, goodName, playerBuyPrice)
+                    retval = (TradeAction.BUY, quantity, goodName, playerBuyPrice)
                     break
                 elif action == 'sell':
                     while True:
@@ -350,7 +351,7 @@ class StdInPlayer(game.Player):
 
                     # This all checks out, return this.
                     print('SELL {0} {1} for {2}'.format(quantity, goodName, playerSellPrice*quantity))
-                    retval = (trade.SELL, quantity, goodName, playerSellPrice)
+                    retval = (TradeAction.SELL, quantity, goodName, playerSellPrice)
                     break
                 else:
                     print('Invalid trade command')

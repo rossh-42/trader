@@ -1,12 +1,12 @@
 from collections import Counter
 import random
-from typing import List, Tuple, Dict
 from trader.combat import Combat, CombatEvent, CombatAction, DeathReason
 from trader import encounter
 from trader.game import Inventory, Player, Game, Being
 from trader.players.stdInPlayer import StdInPlayer
 from trader.search import SearchAction
 from trader.trade import TradeAction
+from typing import List, Tuple, Dict, Optional
 
 
 class RandomPlayer(Player):
@@ -80,7 +80,7 @@ class RandomPlayer(Player):
     def readTradeAdvertisement(self, game: Game, prices: Dict[str, int]):
         pass
 
-    def chooseTradeAction(self, game: Game, meBeing: Being, themBeing: Being):
+    def chooseTradeAction(self, game: Game, meBeing: 'Being', themBeing: 'Being') -> Tuple[TradeAction, Optional[int], Optional[str], Optional[int]]:  # noqa: E501
         tradeAction = random.choice((TradeAction.BUY, TradeAction.SELL, TradeAction.BUY,
                                      TradeAction.SELL, TradeAction.DONE))
         if tradeAction == TradeAction.BUY:

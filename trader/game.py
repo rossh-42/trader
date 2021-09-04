@@ -1,11 +1,13 @@
 import argparse
 from collections import Counter
 import random
-from trader.combat import DeathReason
-from trader.encounter import Encounter
+from trader.search import SearchAction, SearchEvent
+from trader.trade import TradeAction, TradeEvent
+from trader.combat import Combat, CombatAction, CombatEvent, DeathReason
+from trader.encounter import Encounter, EncounterStateCode
 from trader.profiles import Vessel
 from trader.profiles import VesselUpgrade
-from typing import Optional
+from typing import Optional, List, Tuple, Dict
 
 
 random.seed()
@@ -390,7 +392,7 @@ class Game:
 class Player:
     """The interface you must define to create a new player."""
 
-    def initGame(self, playerNumber):
+    def initGame(self, playerNumber: int) -> str:
         """
         Call to each player to start a game.
         playerNumber - Number that is used to uniquify each player name.
@@ -398,7 +400,7 @@ class Player:
         """
         raise NotImplementedError("initGame is virtual and must be overridden.")
 
-    def chooseDestination(self, game):
+    def chooseDestination(self, game: Game) -> Optional[str]:
         """
         Choose a new destination node.  This must be a neighbor node to your current location.
         game - Game object.
@@ -406,14 +408,14 @@ class Player:
         """
         raise NotImplementedError("chooseDestination is virtual and must be overridden.")
 
-    def safeTravelUpdate(self, game, distanceLeft):
+    def safeTravelUpdate(self, game: Game, distanceLeft: int):
         """
         You have safely and uneventfully travelled for one day.
         game - Game object.
         """
         raise NotImplementedError("safeTravelUpdate is virtual and must be overridden.")
 
-    def voteInitState(self, game, being):
+    def voteInitState(self, game: Game, being: 'Being') -> EncounterStateCode:
         """
         Vote on what state to begin an encounter in.
         being - The other being you are about to encounter.
@@ -423,7 +425,7 @@ class Player:
         """
         raise NotImplementedError("voteInitState is virtual and must be overridden.")
 
-    def chooseCombatAction(self, game, being, cmbt):
+    def chooseCombatAction(self, game: Game, being: 'Being', cmbt: Combat) -> CombatAction:
         """
         You have been confronted by an enemy and must choose a response.
         game - Game object.
@@ -433,7 +435,7 @@ class Player:
         """
         raise NotImplementedError("chooseCombatAction is virtual and must be overridden.")
 
-    def combatEvents(self, game, events):
+    def combatEvents(self, game: Game, events: List[CombatEvent]):
         """
         A series of updates for ongoing combat.
         game - Game object.
@@ -441,14 +443,14 @@ class Player:
         """
         raise NotImplementedError("combatEvents is virtual and must be overridden.")
 
-    def arrived(self, game):
+    def arrived(self, game: Game):
         """
         You have arrived at your destination node.
         game - the Game object.
         """
         raise NotImplementedError("arrived is virtual and must be overridden.")
 
-    def nodeEvents(self, game, events):
+    def nodeEvents(self, game: Game, events: Tuple[str]):
         """
         Tell the player which events are happening at the node they are currently at.
         game - the Game object.
@@ -457,7 +459,7 @@ class Player:
         """
         raise NotImplementedError("nodeEvents is virtual and must be overridden.")
 
-    def advertiseTrade(self, game, meBeing):
+    def advertiseTrade(self, game: Game, meBeing: 'Being') -> Dict[str, int]:
         """
         Ask the player to advertise the sell prices for all goods in his inventory.
         game - the Game object.
@@ -466,7 +468,7 @@ class Player:
         """
         raise NotImplementedError("advertiseTrade is virtual and must be overridden.")
 
-    def readTradeAdvertisement(self, game, prices):
+    def readTradeAdvertisement(self, game: Game, prices: Dict[str, int]):
         """
         Receive advertisments about another player's inventory and prices.
         game - the Game object.
@@ -474,7 +476,7 @@ class Player:
         """
         raise NotImplementedError("readTradeAdvertisement is virtual and must be overridden.")
 
-    def chooseTradeAction(self, game, meBeing, themBeing):
+    def chooseTradeAction(self, game: Game, meBeing: 'Being', themBeing: 'Being') -> Tuple[TradeAction, Optional[int], Optional[str], Optional[int]]:  # noqa: E501
         """
         You have an opportunity to trade commodities, weapons, or vessels.
         game - the Game object.
@@ -484,7 +486,8 @@ class Player:
         """
         raise NotImplementedError("chooseTradeAction is virtual and must be overridden.")
 
-    def evaluateTradeRequest(self, game, meBeing, themBeing, tradeAction, quantity, goodName, price):
+    def evaluateTradeRequest(self, game: Game, meBeing: 'Being', themBeing: 'Being', tradeAction: TradeAction,
+                             quantity: int, goodName: str, price: int) -> bool:
         """
         You have an opportunity to trade commodities, weapons, or vessels.
         game - the Game object.
@@ -498,7 +501,7 @@ class Player:
         """
         raise NotImplementedError("evaluateTradeRequest is virtual and must be overridden.")
 
-    def tradeEvents(self, game, events):
+    def tradeEvents(self, game: Game, events: List[TradeEvent]):
         """
         A series of updates for ongoing trade.
         game - Game object.
@@ -506,36 +509,36 @@ class Player:
         """
         raise NotImplementedError("tradeEvents is virtual and must be overridden.")
 
-    def chooseSearchAction(self, game, meBeing, themBeing):
+    def chooseSearchAction(self, game: Game, meBeing: 'Being', themBeing: 'Being') -> SearchAction:
         """
         game - the Game object.
         meBeing - Being object representing you.
         themBeing - Being object representing your counterpart.
-        Returns one of (search.BOARD, search.SOLICIT_BRIBE, search.PASS, search.FIGHT)
+        Returns SearchAction.
         """
         raise NotImplementedError("chooseSearchAction is virtual and must be overridden.")
 
-    def evaluateBoardRequest(self, game, meBeing, themBeing):
+    def evaluateBoardRequest(self, game: Game, meBeing: 'Being', themBeing: 'Being') -> SearchAction:
         """
         Evaluate a request to board your vessel.
         game - the Game object.
         meBeing - Being object representing you.
         themBeing - Being object representing your counterpart.
-        Returns one of (search.PASS, search.FIGHT, search.SUBMIT).
+        Returns SearchAction.
         """
         raise NotImplementedError("evaluateBoardRequest is virtual and must be overridden.")
 
-    def evaluateBribeSolicitation(self, game, meBeing, themBeing):
+    def evaluateBribeSolicitation(self, game: Game, meBeing: 'Being', themBeing: 'Being') -> Tuple[SearchAction, int]:
         """
         Evaluate a solicitation of a bribe.
         game - the Game object.
         meBeing - Being object representing you.
         themBeing - Being object representing your counterpart.
-        Returns a tuple of  ( (search.PASS, search.FIGHT, search.SUBMIT), bribeAmount )
+        Returns a tuple of  ( SearchAction, bribeAmount )
         """
         raise NotImplementedError("evaluateBribeSolicitation is virtual and must be overridden.")
 
-    def seize(self, game, themInventory):
+    def seize(self, game: Game, themInventory: 'Inventory') -> 'Inventory':
         """
         You have successfully boarded another vessel and can seize what you like from their inventory.
         game - the Game object.
@@ -544,7 +547,7 @@ class Player:
         """
         raise NotImplementedError("seize is virtual and must be overridden.")
 
-    def searchEvents(self, game, events):
+    def searchEvents(self, game: Game, events: List[SearchEvent]):
         """
         A series of updates for ongoing search encounter.
         game - Game object.
@@ -552,7 +555,7 @@ class Player:
         """
         raise NotImplementedError("searchEvents is virtual and must be overridden.")
 
-    def death(self, game, deathReason):
+    def death(self, game: Game, deathReason: DeathReason):
         """
         You are dead.
         game - Game object.
