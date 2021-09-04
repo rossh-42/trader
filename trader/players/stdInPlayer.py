@@ -1,10 +1,12 @@
 import string
 import sys
-from trader import combat
-from trader import encounter
+from trader.combat import Combat, DeathReason, CombatAction, CombatEventCode
+from trader.combat import CombatEvent, DamageCombatEvent, DeathCombatEvent, EscapeCombatEvent
+from trader.combat import FailToEscapeCombatEvent, JoinCombatEvent, VictoryCombatEvent
+from trader.encounter import EncounterStateCode
 from trader.game import Game, Being, Player
 from trader.trade import TradeAction
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List, Dict
 
 
 class AbortException(Exception):
@@ -17,22 +19,22 @@ class StdInPlayer(Player):
         self._buyPrices = {}
         self._sellPrices = {}
 
-    def initGame(self, playerNumber):
+    def initGame(self, playerNumber: int) -> str:
         print('Player number = {0}'.format(playerNumber))
         print('Enter your player name:')
         self._beingName = input('>')
         return self._beingName
 
-    def death(self, game, deathReason):
-        if deathReason == combat.DeathReason.COMBAT:
+    def death(self, game: Game, deathReason: DeathReason):
+        if deathReason == DeathReason.COMBAT:
             print('DIED IN COMBAT')
-        elif deathReason == combat.DeathReason.OUT_OF_FUEL:
+        elif deathReason == DeathReason.OUT_OF_FUEL:
             print('DIED - RAN OUT OF FUEL')
         else:
             assert(False)
         sys.exit(0)
 
-    def _getIntInput(self, game, inventory=None):
+    def _getIntInput(self, game: Game, inventory=None):
         """Wrapper function for _getInput that ensures integer input."""
         while True:
             strVal = self._getInput(game, '#>', inventory)
@@ -42,7 +44,7 @@ class StdInPlayer(Player):
             except ValueError:
                 print('You must input a valid integer')
 
-    def _getInput(self, game, prompt, inventory=None):
+    def _getInput(self, game: Game, prompt: str, inventory=None):
         """
         Get a command from stdin and process it if it is any of the standard commands.
         game - The Game object.
@@ -68,7 +70,7 @@ class StdInPlayer(Player):
         print('quit - Quit the game')
         print('help - Show this command help')
 
-    def _processStandardCommands(self, game, command, inventory=None):
+    def _processStandardCommands(self, game: Game, command: str, inventory=None):
         """
         Process any of the standard commands.
         game - The Game object.
@@ -161,7 +163,7 @@ class StdInPlayer(Player):
             sys.exit(0)
         return False
 
-    def chooseDestination(self, game):
+    def chooseDestination(self, game: Game) -> Optional[str]:
         being = game.getBeingByName(self._beingName)
         self._playerState = 'chooseDestination'
         while True:
@@ -185,11 +187,11 @@ class StdInPlayer(Player):
         self._playerState = ''
         return newDestination
 
-    def safeTravelUpdate(self, game, distanceLeft):
+    def safeTravelUpdate(self, game: Game, distanceLeft: int):
         print('Day {0}'.format(game.day))
         print('Safe travel: {0} days left'.format(distanceLeft))
 
-    def voteInitState(self, game, being):
+    def voteInitState(self, game: Game, being: Being) -> EncounterStateCode:
         while True:
             try:
                 self._playerState = 'voteInitState'
@@ -198,16 +200,16 @@ class StdInPlayer(Player):
                 action = self._getInput(game, '->')
                 if action == 'combat':
                     self._playerState = ''
-                    return encounter.COMBAT
+                    return EncounterStateCode.COMBAT
                 elif action == 'trade':
                     self._playerState = ''
-                    return encounter.TRADE
+                    return EncounterStateCode.TRADE
                 else:
                     print('Invalid encounter state')
             except AbortException:
                 print('You can\'t abort this, you must choose!')
 
-    def chooseCombatAction(self, game, being, cmbt):
+    def chooseCombatAction(self, game: Game, being: Being, cmbt: Combat) -> CombatAction:
         while True:
             try:
                 self._playerState = 'chooseCombatAction'
@@ -215,39 +217,45 @@ class StdInPlayer(Player):
                 action = self._getInput(game, 'X>')
                 if action == 'fight':
                     self._playerState = ''
-                    return combat.FIGHT
+                    return CombatAction.FIGHT
                 elif action == 'flee':
                     self._playerState = ''
-                    return combat.FLEE
+                    return CombatAction.FLEE
                 else:
                     print('Invalid combat command')
             except AbortException:
                 print('You can\'t abort this, you must fight!')
 
-    def combatEvents(self, game, events):
+    def combatEvents(self, game: Game, events: List[CombatEvent]):
         for event in events:
-            if event.eventCode == combat.DAMAGE:
-                print('{0} does {1} points of damage to {2}'.format(event.attacker, event.damage, event.defender))
-            elif event.eventCode == combat.DEATH:
-                print('{0} dies'.format(event.being))
-            elif event.eventCode == combat.ESCAPE:
-                print('{0} escapes'.format(event.being))
-            elif event.eventCode == combat.FAIL_TO_ESCAPE:
-                print('{0} fails to escape'.format(event.being))
-            elif event.eventCode == combat.JOIN:
-                print('{0} joins combat'.format(event.being))
-            elif event.eventCode == combat.VICTORY:
-                print('{0} wins!'.format(event.being))
+            if event.eventCode == CombatEventCode.DAMAGE:
+                damage_event: DamageCombatEvent = event  # type: ignore
+                print('{0} does {1} points of damage to {2}'.format(damage_event.attacker, damage_event.damage, damage_event.defender))
+            elif event.eventCode == CombatEventCode.DEATH:
+                death_event: DeathCombatEvent = event  # type: ignore
+                print('{0} dies'.format(death_event.being))
+            elif event.eventCode == CombatEventCode.ESCAPE:
+                escape_event: EscapeCombatEvent = event  # type: ignore
+                print('{0} escapes'.format(escape_event.being))
+            elif event.eventCode == CombatEventCode.FAIL_TO_ESCAPE:
+                fail_event: FailToEscapeCombatEvent = event  # type: ignore
+                print('{0} fails to escape'.format(fail_event.being))
+            elif event.eventCode == CombatEventCode.JOIN:
+                join_event: JoinCombatEvent = event  # type: ignore
+                print('{0} joins combat'.format(join_event.being))
+            elif event.eventCode == CombatEventCode.VICTORY:
+                victory_event: VictoryCombatEvent = event  # type: ignore
+                print('{0} wins!'.format(victory_event.being))
             else:
                 assert(False)
 
-    def arrived(self, game):
+    def arrived(self, game: Game):
         being = game.getBeingByName(self._beingName)
         print('Day {0}'.format(game.day))
         print('You have arrived safely')
         print('Welcome to {0}'.format(string.capwords(being.currentLocation)))
 
-    def _printNodeGoodsList(self, goods):
+    def _printNodeGoodsList(self, goods: Dict[str, int]):
         """
         Print out a list of goods.
         goods - Dictionary goodName -> (sellPrice, buyPrice).
@@ -256,14 +264,14 @@ class StdInPlayer(Player):
         for goodName in goods:
             print('{0}'.format(goodName))
 
-    def nodeEvents(self, game, events):
+    def nodeEvents(self, game: Game, events: Tuple[str]):
         being = game.getBeingByName(self._beingName)
         print('{0} News:'.format(string.capwords(being.currentLocation)))
         for event in events:
             description = game.getNodeEventDescription(event, being)
             print('* {0}'.format(description))
 
-    def advertiseTrade(self, game, meBeing):
+    def advertiseTrade(self, game: Game, meBeing: Being) -> Dict[str, int]:
         self._sellPrices = {}
         self._playerState = 'advertiseTrade'
         for goodName in meBeing.inventory.goods:
@@ -273,7 +281,7 @@ class StdInPlayer(Player):
         self._playerState = ''
         return self._sellPrices
 
-    def readTradeAdvertisement(self, game, prices):
+    def readTradeAdvertisement(self, game: Game, prices: Dict[str, int]):
         for goodName in prices:
             print('{0}: {1}'.format(goodName, prices[goodName]))
         self._buyPrices = prices
@@ -360,7 +368,8 @@ class StdInPlayer(Player):
         self._playerState = ''
         return retval
 
-    def evaluateTradeRequest(self, game, meBeing, themBeing, tradeAction, quantity, goodName, price):
+    def evaluateTradeRequest(self, game: Game, meBeing: 'Being', themBeing: 'Being', tradeAction: TradeAction,
+                             quantity: int, goodName: str, price: int) -> bool:
         print('Trade offer from {0}'.format(themBeing.name))
         assert(tradeAction in (TradeAction.BUY, TradeAction.SELL))
         tradeActionString = 'buy' if tradeAction == TradeAction.BUY else 'sell'
